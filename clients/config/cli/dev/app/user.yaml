@@ -1,0 +1,11 @@
+db:
+  server: default
+  name: user
+redis:
+  server: default
+  name: 0
+jaeger:
+  server: default
+  service_name: user
+rabbitmq:
+  server: default

@@ -1,0 +1,72 @@
+#!/bin/sh
+
+app='go-lib'
+
+RunInDocker(){
+    os=`uname`
+    case $os in
+        Darwin|Linux)
+            LOCALHOST=`ifconfig -a|grep inet|grep -v 127.0.0.1|grep -v inet6|awk '{print $2}'|tr -d "addr:"`     
+            ;;
+        *)
+            LOCALHOST=`ipconfig | grep -a IPv4 | grep -a 192 | awk '{print $NF}'`
+            ;;
+    esac
+    workPath="//go/src/github.com/9d77v/$1"
+    docker run -it --rm --name $1 \
+        -v  /$PWD:$workPath -w $workPath --privileged \
+        -e LOCALHOST="$LOCALHOST" \
+        9d77v/go:1.10.3
+    return
+}
+
+GeneratePB(){
+        protoc -I=. \
+        -I=$GOPATH/src \
+        -I=$GOPATH/src/github.com/gogo/protobuf/protobuf \
+        --gogoslick_out=plugins=grpc,\
+Mgoogle/protobuf/any.proto=github.com/gogo/protobuf/types,\
+Mgoogle/protobuf/duration.proto=github.com/gogo/protobuf/types,\
+Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types,\
+Mgoogle/protobuf/struct.proto=github.com/gogo/protobuf/types,\
+Mgoogle/protobuf/type.proto=github.com/gogo/protobuf/types,\
+Mgoogle/protobuf/api.proto=github.com/gogo/protobuf/types,\
+Mgoogle/protobuf/descriptor.proto=github.com/gogo/protobuf/types,\
+Mgoogle/protobuf/empty.proto=github.com/gogo/protobuf/types,\
+Mgoogle/protobuf/source_context.proto=github.com/gogo/protobuf/types,\
+Mgoogle/protobuf/timestamp.proto=github.com/gogo/protobuf/types,\
+Mgoogle/protobuf/wrappers.proto=github.com/gogo/protobuf/types:. \
+        protos/*.proto
+        list=`find protos -name "*.go"`  
+        for i in $list  
+            do  
+            sed -i "s/context \"golang.org\/x\/net\/context\"/\"context\"/g"  $i
+        done  
+    return
+}
+
+case $1 in 
+    b|build)
+        cd cmd/$2
+        GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build  -ldflags "-s -w"
+        upx -9 $2
+        ;;
+    d|docker)
+        RunInDocker $app
+        ;;
+    e|etcdctl)
+        ETCDCTL_API=3 etcdctl --endpoints=http://$LOCALHOST:7500 $2 $3 $4
+        ;;
+    i)
+        dep ensure -v
+        ;;
+    it)
+        docker exec -it $app fish
+        ;;
+    pb)
+        GeneratePB 
+        ;;
+    *)
+        ;;
+esac  
+

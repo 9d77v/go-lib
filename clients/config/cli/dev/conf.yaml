@@ -1,0 +1,34 @@
+db:
+  default:
+    driver: postgres
+    host: ${LOCALHOST}
+    port: 5432
+    user: postgres
+    password: 123456
+    max_idle_conns: 10
+    max_open_conns: 100
+    enable_log: true
+redis:
+  default:
+    host: ${LOCALHOST}:3306
+    password: 
+jaeger:
+  default:
+    sampler:                  
+      host_port: ${LOCALHOST}:6831
+      refresh_interval: 10     
+    reporter:                 
+      host_port: ${LOCALHOST}:6831
+      flush_interval: 5        
+      queue_size: 1000 
+      log_spans: true
+rabbitmq:
+  default:
+    host: ${LOCALHOST}
+    port: 7512
+    user: admin
+    password: 123456
+kuaidi100:
+  key: aaa
+  secret: bbb
+  customer: ccc
