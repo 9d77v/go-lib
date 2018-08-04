@@ -26,7 +26,7 @@ type Client struct {
 }
 
 //NewClient ..
-func NewClient(config *config.RabbitMQConfig, queueNames []string) (*Client, error) {
+func NewClient(config *config.RabbitmqConfig, queueNames []string) (*Client, error) {
 	if len(queueNames) == 0 {
 		log.Panicln("no queue")
 	}
@@ -63,7 +63,7 @@ func NewClientFromEtcd(etcdCli *etcd.Client, queueNames []string) (mqCli *Client
 	appName := os.Getenv("APP_NAME")
 	profile := os.Getenv("PROFILE")
 	mqKey := etcdCli.GetEtcdKey(profile, appName, "rabbitmq")
-	mqConfig := new(config.RabbitMQConfig)
+	mqConfig := new(config.RabbitmqConfig)
 	err = etcdCli.GetValue(5*time.Second, mqKey, mqConfig)
 	if err != nil {
 		log.Println("rabbitmq config is not exist:", err)
