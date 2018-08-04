@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"strings"
+	"time"
 )
 
 //DBConfig config of relational database
@@ -29,18 +30,18 @@ type RedisConfig struct {
 
 //Sampler config of jaeger sampler
 type Sampler struct {
-	Type            string `yaml:"type"`
-	Param           int    `yaml:"param"`
-	HostPort        string `yaml:"host_port"`
-	RefreshInterval int    `yaml:"refresh_interval"`
+	Type            string        `yaml:"type"`
+	Param           int           `yaml:"param"`
+	HostPort        string        `yaml:"host_port"`
+	RefreshInterval time.Duration `yaml:"refresh_interval"`
 }
 
 //Reporter config of jaeger reporter
 type Reporter struct {
-	LogSpans      bool   `yaml:"log_spans"`
-	HostPort      string `yaml:"host_port"`
-	FlushInterval uint   `yaml:"flush_interval"`
-	QueueSize     uint32 `yaml:"queue_size"`
+	LogSpans      bool          `yaml:"log_spans"`
+	HostPort      string        `yaml:"host_port"`
+	FlushInterval time.Duration `yaml:"flush_interval"`
+	QueueSize     int           `yaml:"queue_size"`
 }
 
 //JaegerConfig config of jeager

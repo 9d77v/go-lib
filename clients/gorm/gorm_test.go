@@ -5,40 +5,38 @@ import (
 	"time"
 
 	"github.com/9d77v/go-lib/clients/etcd"
-
-	"github.com/9d77v/go-lib/clients/config"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
-func TestNewGormClient(t *testing.T) {
-	cli, err := etcd.NewClient(5 * time.Second)
-	dbConfig := new(config.DBConfig)
-	dbKey := "/config/dev/eshop-order/db"
-	err = cli.GetValue(10*time.Second, dbKey, dbConfig)
+func TestNewClientFromEtcd(t *testing.T) {
+	etcdCli, err := etcd.NewClient(5 * time.Second)
 	if err != nil {
-		t.Error("db config not exist:", err)
+		t.Log(err)
+		t.Fail()
 	}
 	type args struct {
-		config *config.DBConfig
+		etcdCli *etcd.Client
+		values  []interface{}
 	}
 	tests := []struct {
 		name string
 		args args
-		// want    *GormClient
+		// wantDbCli *Client
 		wantErr bool
 	}{
-		{"TestNewGormClient", args{dbConfig}, false},
+		{"should be ok", args{etcdCli, nil}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := NewClient(tt.args.config)
+			_, err := NewClientFromEtcd(tt.args.etcdCli, tt.args.values...)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("NewGormClient() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("NewClientFromEtcd() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			// if !reflect.DeepEqual(got, tt.want) {
-			// 	t.Errorf("NewGormClient() = %v, want %v", got, tt.want)
+			// if !reflect.DeepEqual(gotDbCli, tt.wantDbCli) {
+			// 	t.Errorf("NewClientFromEtcd() = %v, want %v", gotDbCli, tt.wantDbCli)
 			// }
 		})
 	}
+	time.Sleep(25 * time.Second)
 }

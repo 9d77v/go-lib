@@ -3,6 +3,7 @@ package gorm
 import (
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"strings"
@@ -10,7 +11,9 @@ import (
 
 	"github.com/9d77v/go-lib/clients/config"
 	"github.com/9d77v/go-lib/clients/etcd"
+	"github.com/9d77v/go-lib/clients/jaeger"
 	"github.com/jinzhu/gorm"
+	opentracing "github.com/opentracing/opentracing-go"
 
 	//postgres
 	_ "github.com/jinzhu/gorm/dialects/postgres"
@@ -19,6 +22,8 @@ import (
 //Client gorm client
 type Client struct {
 	*gorm.DB
+	Tracer opentracing.Tracer
+	Closer io.Closer
 }
 
 //NewClient gorm client
@@ -58,7 +63,7 @@ func NewClient(config *config.DBConfig) (*Client, error) {
 
 	db.Callback().Create().Replace("gorm:update_time_stamp", updateTimeStampForCreateCallback)
 	db.Callback().Update().Replace("gorm:update_time_stamp", updateTimeStampForUpdateCallback)
-	return &Client{db}, nil
+	return &Client{db, nil, nil}, err
 }
 
 func updateTimeStampForCreateCallback(scope *gorm.Scope) {
@@ -107,16 +112,22 @@ func NewClientFromEtcd(etcdCli *etcd.Client, values ...interface{}) (dbCli *Clie
 		log.Println("db connect failed")
 	}
 	db.AutoMigrate(values...)
+	tracer, closer, err := jaeger.InitTracerFromEtcd(etcdCli, dbConfig.Driver)
+	db.Tracer = tracer
+	db.Closer = closer
 	dbCli = db
 	log.Println("db inited")
 	//change to new db connection when  config changed
-	go etcdCli.WatchKey(dbKey, dbConfig, dbCli, func() {
+	go etcdCli.WatchKey(dbKey, dbConfig, func() {
+		log.Println("db wait for change")
 		db, err := NewClient(dbConfig)
 		if err != nil {
 			log.Println("db connect failed")
 			return
 		}
 		db.AutoMigrate(values...)
+		db.Closer = dbCli.Closer
+		db.Tracer = dbCli.Tracer
 		dbCli.Close()
 		dbCli = db
 		log.Println("db changed")

@@ -62,7 +62,7 @@ func (e *Client) GetEtcdKey(profile, appName, item string) string {
 type InitClient func()
 
 //WatchKey .
-func (e *Client) WatchKey(key string, config, client interface{}, initClient InitClient) {
+func (e *Client) WatchKey(key string, config interface{}, initClient InitClient) {
 	rch := e.Watch(context.Background(), key)
 	for wresp := range rch {
 		for _, ev := range wresp.Events {

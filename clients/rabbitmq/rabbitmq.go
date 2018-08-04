@@ -2,12 +2,15 @@ package rabbitmq
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"time"
 
 	"github.com/9d77v/go-lib/clients/config"
 	"github.com/9d77v/go-lib/clients/etcd"
+	"github.com/9d77v/go-lib/clients/jaeger"
+	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/streadway/amqp"
 )
 
@@ -23,6 +26,8 @@ type Client struct {
 	Conn   *amqp.Connection
 	Chs    map[string]*amqp.Channel
 	Queues map[string]amqp.Queue
+	Tracer opentracing.Tracer
+	Closer io.Closer
 }
 
 //NewClient ..
@@ -72,10 +77,13 @@ func NewClientFromEtcd(etcdCli *etcd.Client, queueNames []string) (mqCli *Client
 	if err != nil {
 		log.Println("rabbitmq connect failed")
 	}
+	tracer, closer, err := jaeger.InitTracerFromEtcd(etcdCli, "rabbitmq")
+	mq.Tracer = tracer
+	mq.Closer = closer
 	mqCli = mq
 	log.Println("rabbitmq inited", mqCli)
 	//change to new mq connection when  config changed
-	go etcdCli.WatchKey(mqKey, mqConfig, mqCli, func() {
+	go etcdCli.WatchKey(mqKey, mqConfig, func() {
 		mq, err := NewClient(mqConfig, queueNames)
 		if err != nil {
 			log.Println("rabbitmq connect failed")
@@ -84,6 +92,8 @@ func NewClientFromEtcd(etcdCli *etcd.Client, queueNames []string) (mqCli *Client
 		for _, v := range mqCli.Chs {
 			v.Close()
 		}
+		mq.Closer = mqCli.Closer
+		mq.Tracer = mqCli.Tracer
 		mqCli.Conn.Close()
 		mqCli = mq
 		log.Println("rabbitmq changed", mqCli)
