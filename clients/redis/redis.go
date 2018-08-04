@@ -94,6 +94,7 @@ func (c *Client) ClientWithContext(ctx context.Context) *Client {
 			tags.PeerService.Set(span, "redis")
 			tags.DBType.Set(span, "redis")
 			span.SetTag("db.method", strings.Split(cmd.String(), " ")[0])
+			span.LogKV("cmd", cmd.String())
 			defer span.Finish()
 
 			return oldProcess(cmd)
