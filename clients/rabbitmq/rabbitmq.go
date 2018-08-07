@@ -1,6 +1,8 @@
 package rabbitmq
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -10,7 +12,9 @@ import (
 	"github.com/9d77v/go-lib/clients/config"
 	"github.com/9d77v/go-lib/clients/etcd"
 	"github.com/9d77v/go-lib/clients/jaeger"
+	"github.com/opentracing-contrib/go-amqp/amqptracer"
 	opentracing "github.com/opentracing/opentracing-go"
+	tags "github.com/opentracing/opentracing-go/ext"
 	"github.com/streadway/amqp"
 )
 
@@ -99,4 +103,33 @@ func NewClientFromEtcd(etcdCli *etcd.Client, queueNames []string) (mqCli *Client
 		log.Println("rabbitmq changed", mqCli)
 	})
 	return mqCli, err
+}
+
+//PublishMessage ..
+func (c *Client) PublishMessage(ctx context.Context, exhcange, key string, immediate bool, msg amqp.Publishing) error {
+	var span opentracing.Span
+	if span = opentracing.SpanFromContext(ctx); span != nil {
+		span = c.Tracer.StartSpan("PublishMessage", opentracing.ChildOf(span.Context()))
+		tags.SpanKindProducer.Set(span)
+		tags.PeerService.Set(span, "rabbitmq")
+		defer span.Finish()
+		ctx = opentracing.ContextWithSpan(ctx, span)
+	}
+	msg.Headers = make(map[string]interface{})
+	if err := amqptracer.Inject(span, msg.Headers); err != nil {
+		if span != nil {
+			tags.Error.Set(span, true)
+			span.LogKV("error", "amqptracer.Inject error")
+		}
+		return err
+	}
+	ch := c.Chs[key]
+	if ch == nil {
+		if span != nil {
+			tags.Error.Set(span, true)
+			span.LogKV("error", "channel is not exist")
+		}
+		return errors.New("channel is not exist")
+	}
+	return ch.Publish(exhcange, key, false, immediate, msg)
 }
