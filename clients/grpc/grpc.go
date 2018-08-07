@@ -50,8 +50,11 @@ func NewClientConn(etcdCli *etcd.Client, serviceName string, profile string) (*g
 		)))
 }
 
+//CloseClient close clients' connections
+type CloseClient func()
+
 //SignalHandler check signal for grpceful stop
-func SignalHandler(server *grpc.Server) {
+func SignalHandler(server *grpc.Server, closeClient CloseClient) {
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
 	for {
@@ -59,8 +62,10 @@ func SignalHandler(server *grpc.Server) {
 		log.Printf("signal: %v", sig)
 		switch sig {
 		case syscall.SIGINT, syscall.SIGTERM:
-			log.Printf("stop")
+			log.Println("stop")
 			signal.Stop(ch)
+			log.Println("close clients' connections")
+			closeClient()
 			server.GracefulStop()
 			log.Printf("graceful shutdown")
 			return
