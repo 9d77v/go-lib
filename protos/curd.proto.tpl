@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package ${package};
-import "github.com/9d77v/lib-go/protos/error.proto";
+import "github.com/9d77v/go-lib/protos/error.proto";
 
 import "google/protobuf/timestamp.proto";
 import "github.com/gogo/protobuf/gogoproto/gogo.proto";
