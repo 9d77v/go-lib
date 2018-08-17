@@ -19,7 +19,7 @@ import (
 func NewConfig(configPath string) (map[string]*config.AppConfig, *config.DefaultConfig) {
 	appConfigs := make(map[string]*config.AppConfig)
 	defaultConfig := new(config.DefaultConfig)
-	b, err := ioutil.ReadFile(configPath + "/conf.yaml")
+	b, err := ioutil.ReadFile(configPath + "/conf.yml")
 	if err != nil {
 		log.Fatalln("error:reading configuration file")
 	}
