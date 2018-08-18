@@ -88,6 +88,7 @@ func InitConfig(dialTimeout time.Duration,
 		key    string
 	}{
 		{defaultConfig.ExpressConfig, "express"},
+		{defaultConfig.SMSConfig, "sms"},
 	}
 	for _, global := range globals {
 		if global.config != nil {
@@ -136,6 +137,7 @@ func SyncConfig(dialTimeout time.Duration,
 		key    string
 	}{
 		{defaultConfig.ExpressConfig, "express"},
+		{defaultConfig.SMSConfig, "sms"},
 	}
 	for _, global := range globals {
 		if global.config != nil {

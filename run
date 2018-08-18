@@ -55,7 +55,7 @@ case $1 in
         RunInDocker $app
         ;;
     e|etcdctl)
-        ETCDCTL_API=3 etcdctl --endpoints=http://$LOCALHOST:7500 $2 $3 $4
+        ETCDCTL_API=3 etcdctl --endpoints=http://$LOCALHOST:8500 $2 $3 $4
         ;;
     i)
         go mod vendor -v
