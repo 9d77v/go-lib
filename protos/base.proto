@@ -6,3 +6,8 @@ message Error {
   int32 code = 1;
   string message = 2;
 }
+
+message Combo{
+  int64 id=1;
+  string name=2;
+}
