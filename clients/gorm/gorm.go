@@ -130,6 +130,7 @@ func (c *Client) ClientWithContext(ctx context.Context) *Client {
 		return c
 	}
 	c.DB = c.DB.Set(parentSpanGormKey, parentSpan)
+	c.DB = c.DB.Set(spanGormTracer, c.Tracer)
 	return c
 }
 
