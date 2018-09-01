@@ -1,6 +1,7 @@
 package gorm
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -17,6 +18,12 @@ import (
 
 	//postgres
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+)
+
+const (
+	parentSpanGormKey = "opentracingParentSpan"
+	spanGormKey       = "opentracingSpan"
+	spanGormTracer    = "opentracingTracer"
 )
 
 //Client gorm client
@@ -66,30 +73,6 @@ func NewClient(config *config.DBConfig) (*Client, error) {
 	return &Client{db, nil, nil}, err
 }
 
-func updateTimeStampForCreateCallback(scope *gorm.Scope) {
-	if !scope.HasError() {
-		now := time.Now()
-
-		if createdAtField, ok := scope.FieldByName("CreateTime"); ok {
-			if createdAtField.IsBlank {
-				createdAtField.Set(now)
-			}
-		}
-
-		if updatedAtField, ok := scope.FieldByName("UpdateTime"); ok {
-			if updatedAtField.IsBlank {
-				updatedAtField.Set(now)
-			}
-		}
-	}
-}
-
-func updateTimeStampForUpdateCallback(scope *gorm.Scope) {
-	if _, ok := scope.Get("gorm:update_column"); !ok {
-		scope.SetColumn("UpdateTime", time.Now())
-	}
-}
-
 //NewDBConfig get config from etcd
 func NewDBConfig(etcdCli *etcd.Client) (string, *config.DBConfig) {
 	appName := os.Getenv("APP_NAME")
@@ -116,6 +99,7 @@ func NewClientFromEtcd(etcdCli *etcd.Client, values ...interface{}) (dbCli *Clie
 	db.Tracer = tracer
 	db.Closer = closer
 	dbCli = db
+	dbCli.addGormCallbacks()
 	log.Println("db inited")
 	//change to new db connection when  config changed
 	go etcdCli.WatchKey(dbKey, dbConfig, func() {
@@ -130,7 +114,30 @@ func NewClientFromEtcd(etcdCli *etcd.Client, values ...interface{}) (dbCli *Clie
 		db.Tracer = dbCli.Tracer
 		dbCli.Close()
 		dbCli = db
+		dbCli.addGormCallbacks()
 		log.Println("db changed")
 	})
 	return dbCli, err
+}
+
+//ClientWithContext ...
+func (c *Client) ClientWithContext(ctx context.Context) *Client {
+	if ctx == nil {
+		return c
+	}
+	parentSpan := opentracing.SpanFromContext(ctx)
+	if parentSpan == nil {
+		return c
+	}
+	c.DB = c.DB.Set(parentSpanGormKey, parentSpan)
+	return c
+}
+
+func (c *Client) addGormCallbacks() {
+	callbacks := newCallbacks()
+	registerCallbacks(c.DB, "create", callbacks)
+	registerCallbacks(c.DB, "query", callbacks)
+	registerCallbacks(c.DB, "update", callbacks)
+	registerCallbacks(c.DB, "delete", callbacks)
+	registerCallbacks(c.DB, "row_query", callbacks)
 }
