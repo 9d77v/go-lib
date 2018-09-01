@@ -55,7 +55,7 @@ func (c *callbacks) after(scope *gorm.Scope, operation string) {
 	if operation == "" {
 		operation = strings.ToUpper(strings.Split(scope.SQL, " ")[0])
 	}
-	tags.DBStatement.Set(span, fmt.Sprint(scope.SQL, scope.SQLVars))
+	tags.DBStatement.Set(span, fmt.Sprint(gorm.LogFormatter(scope.SQL, scope.SQLVars)...))
 	span.SetTag("db.table", scope.TableName())
 	span.SetTag("db.method", operation)
 	span.Finish()
