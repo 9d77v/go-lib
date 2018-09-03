@@ -16,7 +16,7 @@ RunInDocker(){
     docker run -it --rm --name $1 \
         -v  /$PWD:$workPath -w $workPath --privileged \
         -e LOCALHOST="$LOCALHOST" \
-        9d77v/go:1.11rc1
+        9d77v/go:1.11.0
     return
 }
 
