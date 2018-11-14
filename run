@@ -1,22 +1,28 @@
 #!/bin/sh
 
 app='go-lib'
+echo "check if command 'sudo' exist"
+sudo=""
+if command -v sudo >/dev/null 2>&1; then
+    echo 'sudo exist'
+    sudo="sudo"
+fi
 
 RunInDocker(){
     os=`uname`
     case $os in
         Darwin|Linux)
-            LOCALHOST=`ifconfig -a|grep inet|grep -v 127.0.0.1|grep -v inet6|awk '{print $2}'|tr -d "addr:"`     
+            LOCALHOST=`ifconfig -a|grep inet|grep -v 127.0.0.1|grep -v inet6|awk '{print $2}'|tr -d "addr:" | sort -r | head -1`     
             ;;
         *)
             LOCALHOST=`ipconfig | grep -a IPv4 | grep -a 192 | awk '{print $NF}'`
             ;;
     esac
     workPath="//go/src/github.com/9d77v/$1"
-    docker run -it --rm --name $1 \
+    $sudo docker run -it --rm --name $1 \
         -v  /$PWD:$workPath -w $workPath --privileged \
         -e LOCALHOST="$LOCALHOST" \
-        9d77v/go:1.11.0
+        registry.cn-beijing.aliyuncs.com/9d77v/go:1.11.0
     return
 }
 
@@ -61,7 +67,7 @@ case $1 in
         go mod vendor -v
         ;;
     it)
-        docker exec -it $app fish
+        $sudo docker exec -it $app fish
         ;;
     pb)
         GeneratePB 
@@ -69,4 +75,3 @@ case $1 in
     *)
         ;;
 esac  
-
