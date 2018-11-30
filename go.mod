@@ -42,6 +42,7 @@ require (
 	github.com/onsi/gomega v1.4.1 // indirect
 	github.com/opentracing-contrib/go-amqp v0.0.0-20171102191528-e26701f95620
 	github.com/opentracing/opentracing-go v1.0.2
+	github.com/pkg/errors v0.8.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_golang v0.8.0 // indirect
 	github.com/prometheus/client_model v0.0.0-20180712105110-5c3871d89910 // indirect
@@ -70,7 +71,6 @@ require (
 	gopkg.in/airbrake/gobrake.v2 v2.0.9 // indirect
 	gopkg.in/fsnotify.v1 v1.4.7 // indirect
 	gopkg.in/gemnasium/logrus-airbrake-hook.v2 v2.1.2 // indirect
-	gopkg.in/olivere/elastic.v5 v5.0.76
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v2 v2.2.1
 )

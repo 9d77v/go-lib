@@ -26,6 +26,11 @@ type RedisConfig struct {
 	Password string `yaml:"password"`
 }
 
+//ElasticConfig config of elasticsearch brokers
+type ElasticConfig struct {
+	URLs []string `yaml:"urls"`
+}
+
 //Sampler config of jaeger sampler
 type Sampler struct {
 	Type            string        `yaml:"type"`
