@@ -22,7 +22,7 @@ RunInDocker(){
     $sudo docker run -it --rm --name $1 \
         -v  /$PWD:$workPath -w $workPath --privileged \
         -e LOCALHOST="$LOCALHOST" \
-        registry.cn-beijing.aliyuncs.com/9d77v/go:1.11.0
+        9d77v/go:1.11.2
     return
 }
 
