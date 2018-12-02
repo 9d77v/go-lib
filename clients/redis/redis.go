@@ -6,7 +6,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -93,8 +92,8 @@ func (c *Client) ClientWithContext(ctx context.Context) *Client {
 			span := c.Tracer.StartSpan("redis", opentracing.ChildOf(parentSpan.Context()))
 			tags.PeerService.Set(span, "redis")
 			tags.DBType.Set(span, "redis")
-			span.SetTag("db.method", strings.Split(cmd.String(), " ")[0])
-			span.LogKV("cmd", cmd.String())
+			span.SetTag("db.method", cmd.Name())
+			span.LogKV("cmd", cmd.Name(), cmd.Args())
 			defer span.Finish()
 
 			return oldProcess(cmd)
