@@ -72,13 +72,15 @@ func (c *Client) FindIndexesByAlias(ctx context.Context, aliasName, layout strin
 	}
 	intArr := make([]int, 0)
 	for _, v := range indexNames {
-		vIndex := strings.Replace(v, aliasName+"-", "", 1)
-		t, err := time.ParseInLocation(layout, vIndex, time.Local)
-		if err != nil {
-			log.Println("时间转换失败", err)
-			continue
+		if strings.Contains(v, aliasName) {
+			vIndex := strings.Replace(v, aliasName+"-", "", 1)
+			t, err := time.ParseInLocation(layout, vIndex, time.Local)
+			if err != nil {
+				log.Println("时间转换失败", err)
+				continue
+			}
+			intArr = append(intArr, int(t.Unix()))
 		}
-		intArr = append(intArr, int(t.Unix()))
 	}
 	sort.Ints(intArr)
 	indexArr := make([]string, 0)
