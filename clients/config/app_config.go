@@ -7,20 +7,20 @@ import (
 
 //DefaultConfig ...
 type DefaultConfig struct {
-	DB            map[string]*DBConfig       `yaml:"db"`
-	Redis         map[string]*RedisConfig    `yaml:"redis"`
-	Jaeger        map[string]*JaegerConfig   `yaml:"jaeger"`
-	Rabbitmq      map[string]*RabbitmqConfig `yaml:"rabbitmq"`
-	ExpressConfig *ExpressConfig             `yaml:"express"`
-	SMSConfig     *SMSConfig                 `yaml:"sms"`
+	DB            map[string]*DBConfig       `yaml:"db" json:"db"`
+	Redis         map[string]*RedisConfig    `yaml:"redis" json:"redis"`
+	Jaeger        map[string]*JaegerConfig   `yaml:"jaeger" json:"jaeger"`
+	Rabbitmq      map[string]*RabbitmqConfig `yaml:"rabbitmq" json:"rabbitmq"`
+	ExpressConfig *ExpressConfig             `yaml:"express" json:"express"`
+	SMSConfig     *SMSConfig                 `yaml:"sms" json:"sms"`
 }
 
 //AppConfig ...
 type AppConfig struct {
-	DB       *DBConfig       `yaml:"db"`
-	Redis    *RedisConfig    `yaml:"redis"`
-	Jaeger   *JaegerConfig   `yaml:"jaeger"`
-	Rabbitmq *RabbitmqConfig `yaml:"rabbitmq"`
+	DB       *DBConfig       `yaml:"db" json:"db"`
+	Redis    *RedisConfig    `yaml:"redis" json:"redis"`
+	Jaeger   *JaegerConfig   `yaml:"jaeger" json:"jaeger"`
+	Rabbitmq *RabbitmqConfig `yaml:"rabbitmq" json:"rabbitmq"`
 }
 
 const (

@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"log"
 	"os"
@@ -75,7 +76,7 @@ func SyncConfig(dialTimeout time.Duration,
 		for _, update := range updates {
 			if update.config != nil {
 				key := cli.GetEtcdKey(profile, k, update.key)
-				value, err := yaml.Marshal(update.config)
+				value, err := json.Marshal(update.config)
 				if err != nil {
 					continue
 				}
@@ -96,7 +97,7 @@ func SyncConfig(dialTimeout time.Duration,
 	for _, global := range globals {
 		if global.config != nil {
 			key := cli.GetEtcdKey(profile, "global", global.key)
-			value, err := yaml.Marshal(global.config)
+			value, err := json.Marshal(global.config)
 			if err != nil {
 				continue
 			}
