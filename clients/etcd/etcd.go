@@ -77,3 +77,33 @@ func (e *Client) WatchKey(key string, config interface{}, initClient InitClient)
 		}
 	}
 }
+
+//SyncKey sync yaml content to etcd
+func (e *Client) SyncKey(requestTimeout time.Duration, key string, value []byte) error {
+	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
+	resp, err := e.Get(ctx, key)
+	cancel()
+	if err != nil {
+		return err
+	}
+	if len(resp.Kvs) == 0 {
+		ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
+		_, err := e.Put(ctx, key, string(value))
+		cancel()
+		if err != nil {
+			return err
+		}
+	} else {
+		for _, ev := range resp.Kvs {
+			if string(ev.Key) == key && string(value) != string(ev.Value) {
+				ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
+				_, err := e.Put(ctx, key, string(value))
+				cancel()
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return nil
+}

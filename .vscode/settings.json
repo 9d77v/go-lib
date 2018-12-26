@@ -1,7 +1,7 @@
 {
     "go.testEnvVars": {
-        "ETCD_SERVER": "localhost:7500",
+        "ETCD_SERVER": "localhost:8500",
         "PROFILE": "dev",
-        "APP_NAME": "eshop-express",
+        "APP_NAME": "test-user",
     }
 }

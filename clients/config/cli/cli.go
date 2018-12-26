@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"context"
 	"io/ioutil"
 	"log"
 	"os"
@@ -53,55 +52,6 @@ func NewConfig(configPath string) (map[string]*config.AppConfig, *config.Default
 	return appConfigs, defaultConfig
 }
 
-//InitConfig write config to etcd
-func InitConfig(dialTimeout time.Duration,
-	requestTimeout time.Duration, configPath string) error {
-	profile := filepath.Base(configPath)
-	appConfigMap, defaultConfig := NewConfig(configPath)
-	cli, err := etcd.NewClient(dialTimeout)
-	defer cli.Close()
-	if err != nil {
-		log.Panicln("etcd connect failed,error:", err)
-	}
-	for k, v := range appConfigMap {
-		creates := []struct {
-			config interface{}
-			key    string
-		}{
-			{v.DB, "db"},
-			{v.Redis, "redis"},
-			{v.Jaeger, "jaeger"},
-			{v.Rabbitmq, "rabbitmq"},
-		}
-		for _, create := range creates {
-			if create.config != nil {
-				key := cli.GetEtcdKey(profile, k, create.key)
-				err = createConfig(requestTimeout, cli, key, create.config)
-				if err != nil {
-					return err
-				}
-			}
-		}
-	}
-	globals := []struct {
-		config interface{}
-		key    string
-	}{
-		{defaultConfig.ExpressConfig, "express"},
-		{defaultConfig.SMSConfig, "sms"},
-	}
-	for _, global := range globals {
-		if global.config != nil {
-			key := cli.GetEtcdKey(profile, "global", global.key)
-			err = createConfig(requestTimeout, cli, key, global.config)
-			if err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
-
 //SyncConfig write changed config to etcd
 func SyncConfig(dialTimeout time.Duration,
 	requestTimeout time.Duration, configPath string) error {
@@ -125,7 +75,11 @@ func SyncConfig(dialTimeout time.Duration,
 		for _, update := range updates {
 			if update.config != nil {
 				key := cli.GetEtcdKey(profile, k, update.key)
-				err = updateConfig(requestTimeout, cli, key, update.config)
+				value, err := yaml.Marshal(update.config)
+				if err != nil {
+					continue
+				}
+				err = cli.SyncKey(requestTimeout, key, value)
 				if err != nil {
 					return err
 				}
@@ -142,54 +96,13 @@ func SyncConfig(dialTimeout time.Duration,
 	for _, global := range globals {
 		if global.config != nil {
 			key := cli.GetEtcdKey(profile, "global", global.key)
-			err = updateConfig(requestTimeout, cli, key, global.config)
+			value, err := yaml.Marshal(global.config)
+			if err != nil {
+				continue
+			}
+			err = cli.SyncKey(requestTimeout, key, value)
 			if err != nil {
 				return err
-			}
-		}
-	}
-	return nil
-}
-
-func createConfig(requestTimeout time.Duration, cli *etcd.Client, key string, v interface{}) error {
-	value, err := yaml.Marshal(v)
-	if err != nil {
-		return err
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
-	_, err = cli.Put(ctx, key, string(value))
-	cancel()
-	return err
-}
-
-// update config if it is not the same in etcd
-func updateConfig(requestTimeout time.Duration, cli *etcd.Client, key string, v interface{}) error {
-	value, err := yaml.Marshal(v)
-	if err != nil {
-		return err
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
-	resp, err := cli.Get(ctx, key)
-	cancel()
-	if err != nil {
-		return err
-	}
-	if len(resp.Kvs) == 0 {
-		ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
-		_, err := cli.Put(ctx, key, string(value))
-		cancel()
-		if err != nil {
-			return err
-		}
-	} else {
-		for _, ev := range resp.Kvs {
-			if string(ev.Key) == key && string(value) != string(ev.Value) {
-				ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
-				_, err := cli.Put(ctx, key, string(value))
-				cancel()
-				if err != nil {
-					return err
-				}
 			}
 		}
 	}

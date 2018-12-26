@@ -107,37 +107,6 @@ import (
 // 	}
 // }
 
-func TestInitConfig(t *testing.T) {
-	os.Setenv("LOCALHOST", "192.168.1.21")
-	type args struct {
-		etcdServer     string
-		dialTimeout    time.Duration
-		requestTimeout time.Duration
-		configPath     string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		{"test init config",
-			args{
-				dialTimeout:    5 * time.Second,
-				requestTimeout: 10 * time.Second,
-				configPath:     "dev",
-			},
-			false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := InitConfig(tt.args.dialTimeout, tt.args.requestTimeout, tt.args.configPath); (err != nil) != tt.wantErr {
-				t.Errorf("WriteConfigToEtcd() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
 func TestSyncConfig(t *testing.T) {
 	os.Setenv("LOCALHOST", "192.168.1.21")
 	type args struct {
