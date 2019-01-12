@@ -2,7 +2,6 @@ package etcd
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -10,6 +9,7 @@ import (
 	"time"
 
 	"github.com/coreos/etcd/clientv3"
+	yaml "gopkg.in/yaml.v2"
 )
 
 //Client .
@@ -46,7 +46,7 @@ func (e *Client) GetValue(dailTimeout time.Duration, key string, value interface
 	}
 	for _, ev := range resp.Kvs {
 		if string(ev.Key) == key {
-			err = json.Unmarshal(ev.Value, value)
+			err = yaml.Unmarshal(ev.Value, value)
 			return err
 		}
 	}
@@ -67,7 +67,7 @@ func (e *Client) WatchKey(key string, config interface{}, initClient InitClient)
 	for wresp := range rch {
 		for _, ev := range wresp.Events {
 			if string(ev.Kv.Key) == key {
-				err := json.Unmarshal(ev.Kv.Value, config)
+				err := yaml.Unmarshal(ev.Kv.Value, config)
 				if err != nil {
 					log.Println("config parse fialed")
 					return
