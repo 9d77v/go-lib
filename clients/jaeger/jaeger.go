@@ -1,6 +1,7 @@
 package jaeger
 
 import (
+	"context"
 	"errors"
 	"io"
 	"log"
@@ -137,4 +138,17 @@ func InitGlobalTracerFromEtcd(etcdCli *etcd.Client) (closer io.Closer, err error
 		log.Println("jaeger changed")
 	})
 	return closer, err
+}
+
+//GetSpan 获取span
+func GetSpan(ctx context.Context, name string, f func(span opentracing.Span)) (context.Context, opentracing.Span) {
+	var span opentracing.Span
+	if span = opentracing.SpanFromContext(ctx); span != nil {
+		span = opentracing.StartSpan(name, opentracing.ChildOf(span.Context()))
+	} else {
+		span = opentracing.StartSpan(name)
+	}
+	f(span)
+	ctx = opentracing.ContextWithSpan(ctx, span)
+	return ctx, span
 }
