@@ -109,7 +109,9 @@ func InitTracerFromEtcd(etcdCli *etcd.Client, serviceName string) (tracer opentr
 			log.Println("jaeger connect failed")
 			return
 		}
-		closer.Close()
+		if closer != nil {
+			closer.Close()
+		}
 		closer = c
 		tracer = t
 		log.Println("jaeger changed")
@@ -133,7 +135,9 @@ func InitGlobalTracerFromEtcd(etcdCli *etcd.Client) (closer io.Closer, err error
 			log.Println("jaeger connect failed")
 			return
 		}
-		closer.Close()
+		if closer != nil {
+			closer.Close()
+		}
 		closer = c
 		log.Println("jaeger changed")
 	})
