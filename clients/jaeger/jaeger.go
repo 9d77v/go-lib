@@ -16,6 +16,8 @@ import (
 	jaegerlog "github.com/uber/jaeger-client-go/log"
 	"github.com/uber/jaeger-client-go/rpcmetrics"
 	"github.com/uber/jaeger-lib/metrics"
+
+	tags "github.com/opentracing/opentracing-go/ext"
 )
 
 //InitTracer ..
@@ -155,4 +157,16 @@ func GetSpan(ctx context.Context, name string, f func(span opentracing.Span)) (c
 	f(span)
 	ctx = opentracing.ContextWithSpan(ctx, span)
 	return ctx, span
+}
+
+//GetDefaultSpan 获取默认 span
+func GetDefaultSpan(ctx context.Context, name string) (context.Context, opentracing.Span) {
+	return GetSpan(ctx, name, nil)
+}
+
+//GetServerSpan 获取server span
+func GetServerSpan(ctx context.Context, name string) (context.Context, opentracing.Span) {
+	return GetSpan(ctx, name, func(span opentracing.Span) {
+		tags.SpanKindRPCServer.Set(span)
+	})
 }
