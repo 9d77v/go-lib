@@ -161,7 +161,8 @@ func GetSpan(ctx context.Context, name string, f func(span opentracing.Span)) (c
 
 //GetDefaultSpan 获取默认 span
 func GetDefaultSpan(ctx context.Context, name string) (context.Context, opentracing.Span) {
-	return GetSpan(ctx, name, nil)
+	return GetSpan(ctx, name, func(span opentracing.Span) {
+	})
 }
 
 //GetServerSpan 获取server span
