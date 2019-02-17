@@ -1,6 +1,7 @@
 module github.com/9d77v/go-lib
 
 require (
+	github.com/codahale/hdrhistogram v0.0.0-20161010025455-3a0bb77429bd // indirect
 	github.com/coreos/etcd v3.3.11+incompatible
 	github.com/go-redis/redis v6.15.1+incompatible
 	github.com/gogo/protobuf v1.2.0
@@ -19,3 +20,5 @@ require (
 	google.golang.org/grpc v1.18.0
 	gopkg.in/yaml.v2 v2.2.2
 )
+
+replace github.com/uber/jaeger-lib v2.0.0+incompatible => github.com/uber/jaeger-lib v1.5.0
