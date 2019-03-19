@@ -98,7 +98,9 @@ func NewClientFromEtcd(etcdCli *etcd.Client, queueNames []string) (mqCli *Client
 		}
 		mq.Closer = mqCli.Closer
 		mq.Tracer = mqCli.Tracer
-		mqCli.Conn.Close()
+		if mqCli != nil && mqCli.Conn != nil {
+			mqCli.Conn.Close()
+		}
 		mqCli = mq
 		log.Println("rabbitmq changed", mqCli)
 	})

@@ -171,3 +171,12 @@ func GetServerSpan(ctx context.Context, name string) (context.Context, opentraci
 		tags.SpanKindRPCServer.Set(span)
 	})
 }
+
+//SpanFinish span错误记录
+func SpanFinish(span opentracing.Span, err error) {
+	if err != nil {
+		tags.Error.Set(span, true)
+		span.LogKV("error", err)
+	}
+	span.Finish()
+}

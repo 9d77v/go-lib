@@ -112,7 +112,9 @@ func NewClientFromEtcd(etcdCli *etcd.Client, values ...interface{}) (dbCli *Clie
 		db.AutoMigrate(values...)
 		db.Closer = dbCli.Closer
 		db.Tracer = dbCli.Tracer
-		dbCli.Close()
+		if dbCli != nil {
+			dbCli.Close()
+		}
 		dbCli = db
 		dbCli.addGormCallbacks()
 		log.Println("db changed")

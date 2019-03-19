@@ -69,7 +69,9 @@ func NewClientFromEtcd(etcdCli *etcd.Client) (redisCli *Client, err error) {
 		}
 		redis.Closer = redisCli.Closer
 		redis.Tracer = redisCli.Tracer
-		redisCli.Close()
+		if redisCli != nil {
+			redisCli.Close()
+		}
 		redisCli = redis
 		log.Println("redis changed", redisCli)
 	})
