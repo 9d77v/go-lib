@@ -22,3 +22,5 @@ require (
 )
 
 replace github.com/uber/jaeger-lib v2.0.0+incompatible => github.com/uber/jaeger-lib v1.5.0
+
+go 1.13
