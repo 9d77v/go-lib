@@ -1,4 +1,4 @@
-package types
+package ptrs
 
 //String 将string指针转换为string
 func String(s *string) string {
