@@ -151,7 +151,6 @@ func (c *Client) BulkInsert(ctx context.Context, bds []*BulkDoc, indexName strin
 			for j := i * bulkNum; j < utils.MinInt(size, (j+1)*bulkNum); j++ {
 				req := elastic.NewBulkIndexRequest()
 				req.Index(indexName).
-					Type("doc").
 					Id(bds[j].ID).
 					Doc(bds[j].Doc)
 				bulkService.Add(req)
